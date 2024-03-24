@@ -1,0 +1,162 @@
+---
+title: "MTH6139 Time Series"
+subtitle: "Coursework 1"
+author: 
+- name: Laila Ahmed
+date: "March 2024"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+## Meta's Prophet forcasting System 
+### CO2 Time Series 
+
+
+The co2 data set I'm analysing contains measurements of atmospheric carbon dioxide concentrations from 1959 to 1997 which were obtained at Mauna Loa Observatory monthly. 
+
+In this Project I'll be using the Meta's Prophet system to forecast future atmospheric CO2 concentrations based on historical data. Also to identify seasonal patterns which The Prophet package will model, such as annual and monthly fluctuations.This can help environmental researchers and climate scientists forecast future CO2 levels.
+
+
+```{r eval=TRUE, include=TRUE}
+library(prophet)
+co2.df = data.frame(
+  ds=zoo::as.yearmon(time(co2)), 
+  y=co2)
+co2_model= prophet::prophet(co2.df, weekly.seasonality = TRUE, daily.seasonality = TRUE)
+#include weeklyseasonality part
+co2_FutureData= prophet::make_future_dataframe(co2_model, periods=8, freq="quarter")
+co2_forecast = predict(co2_model, co2_FutureData)
+plot(co2_model,co2_forecast)
+```
+
+
+The plot above is a time series of atmospheric concentrations of CO2 from Jan 1959 till Dec 1999. The dots are actual values observed, but the line is the predicted values. The chart shows an increase in CO2 through the years. 
+ 
+
+#### Sesonality
+```{r eval=TRUE, include=TRUE}
+prophet_plot_components(co2_model,co2_forecast)
+```
+
+
+A constant increase in the levels of CO2 can be seen as the the years pass in the first plot.
+On the second Graph atmospheric concentrations of CO2 are higher at the beginning of the week but start to decrease until they reach their lowest levels on Tuesday. Then go back up on Wednesday until Thursday, but then decrease again. 
+Daily it can be seen that the lowest concentrations are between the hours 2-22 but are at its highest  between 23-1. Between 2-22 the levels fluctuate between -0.05 and 0.
+
+
+
+#### Dygraph
+
+```{r eval=TRUE, include=TRUE}
+dyplot.prophet(co2_model, co2_forecast)
+```
+
+
+The dygraph above is interactive, so we can zoom in and out and select specific time ranges. This allows for a more detailed exploration of the CO2 data
+
+
+
+#### Regression
+
+```{r eval=TRUE, include=TRUE}
+co2_lm <- lm(co2 ~ time(co2))
+summary(co2_lm)
+
+```
+
+
+The linear regression  provides insights into the relationship between time (independent variable) and CO2 concentrations (dependent variable).
+
+The coefficient estimate for time(co2) is 1.308, suggesting that CO2 concentrations increase by approximately 1.308 ppm per year.
+
+Both the intercept and time(co2) coefficient have small p-values, suggesting that they are statistically significant predictors of CO2 concentrations.
+
+The R-squared value is 96.95%  This suggests a strong linear relationship between time and CO2 concentrations.
+
+Overall, the results indicate a strong positive linear relationship between time and CO2 concentrations.
+
+
+#### Using Plotly
+
+```{r eval=TRUE, include=TRUE}
+library(plotly)
+
+
+scatter_plot <- plot_ly(data = co2.df, x = ~time(co2), y = ~co2, type = "scatter", mode="line", name = "CO2")
+
+scatter_plot
+
+```
+
+
+
+
+
+
+### Air Passengers Time Series
+The AirPassengers data is monthly totals of international airline passengers from 1949 to 1960 in thousands 
+
+I'll be using the Meta's Prophet system to forecast future air passengers traffic based on historical data. I'll also be identifying seasonal patterns. 
+
+
+
+```{r eval=TRUE, include=TRUE}
+AirPassengers.df = data.frame(
+  ds=zoo::as.yearmon(time(AirPassengers)), 
+  y=AirPassengers)
+
+AirPassengers_model= prophet::prophet(AirPassengers.df, weekly.seasonality = TRUE, daily.seasonality = TRUE )
+
+AirPassengers_FutureData = prophet::make_future_dataframe(AirPassengers_model, periods=17, freq="quarter")
+
+AirPassengers_forecast= predict(AirPassengers_model, AirPassengers_FutureData)
+
+plot(AirPassengers_model,AirPassengers_forecast)
+
+```
+
+
+The time series above shows the number of Airline passengers in thousands from Jan 1949 to Mar 1965.
+The dots are actual values, and the line is predicted values.  
+
+I made the period 17 in the code to predict an extra 4 years and three months. 
+
+
+#### Sesonality
+```{r eval=TRUE, include=TRUE}
+prophet_plot_components(AirPassengers_model,AirPassengers_forecast)
+```
+
+
+These plots include yearly, weekly and daily seasonality.
+
+Weekly the lowest amount of passengers are on Tuesday and the highest amount is on Friday.
+
+Yearly the passengers fluctuate but peak in July and August.
+
+
+
+#### Dygraph
+
+```{r eval=TRUE, include=TRUE}
+dyplot.prophet(AirPassengers_model, AirPassengers_forecast)
+```
+
+
+#### Regression
+
+```{r eval=TRUE, include=TRUE}
+AirPassengers_lm <- lm(AirPassengers ~ time(AirPassengers))
+summary(AirPassengers_lm)
+
+```
+
+The intercept coefficient is -62055.907 and the coefficient for time is 31.886, which shows that the number of AirPassengers increases by 31.886 passengers per month.
+
+
+The R-squared value indicates that 85.36% of the variance in AirPassenger numbers is explained by the linear regression model.
+
+Overall, the regression model suggests a strong positive linear relationship between time and the number of AirPassengers.
